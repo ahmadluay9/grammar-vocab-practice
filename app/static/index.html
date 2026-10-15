@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FluentPulse AI — Daily 25 English Practice</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="brand-group">
+        <div class="brand-logo" aria-hidden="true">FP</div>
+        <div>
+          <h1 class="brand-title">FluentPulse AI</h1>
+          <p class="brand-subtitle">Daily 25 Fill-in-the-Blank English Mastery • Multi-Turn Conversations &amp; Reading Passages</p>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <div class="env-badge" title="Model name loaded dynamically from .env">
+          <span class="env-dot"></span>
+          <span class="env-label">.env Model:</span>
+          <code id="header-model-name">Loading...</code>
+        </div>
+
+        <div class="date-controls">
+          <label for="daily-date-picker" class="sr-only">Practice Date</label>
+          <input type="date" id="daily-date-picker" class="date-input" />
+          <button id="btn-generate-new" class="btn btn-primary" title="Generate 25 new LLM questions for the selected scope and date">
+            ✨ Generate New 25 Questions
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-tabs" aria-label="Main Views">
+      <button class="tab-btn active" data-tab="practice" id="tab-btn-practice">
+        📝 Daily 25 Practice
+      </button>
+      <button class="tab-btn" data-tab="study" id="tab-btn-study">
+        📚 Unit Study Guides
+      </button>
+      <button class="tab-btn" data-tab="analytics" id="tab-btn-analytics">
+        📊 Unit Mastery &amp; History
+      </button>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="workspace-grid">
+      <!-- Left Sidebar: Units & Daily Stats -->
+      <aside class="sidebar">
+        <div class="sidebar-card stats-summary-card">
+          <div class="card-header-row">
+            <h2>Daily 25 Progress</h2>
+            <span id="set-date-badge" class="pill pill-subtle">Today</span>
+          </div>
+          <div class="score-kpi-grid">
+            <div class="kpi-box">
+              <span class="kpi-value" id="kpi-answered">0 / 25</span>
+              <span class="kpi-label">Questions Graded</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-value" id="kpi-avg-score">—</span>
+              <span class="kpi-label">Avg Score (1-100)</span>
+            </div>
+          </div>
+          <div class="progress-track" aria-label="Daily Completion Progress">
+            <div class="progress-fill" id="daily-progress-bar" style="width: 0%"></div>
+          </div>
+          <div id="unit-breakdown-mini" class="unit-breakdown-mini"></div>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="card-header-row">
+            <h2>General Topics (Vocab &amp; Grammar)</h2>
+            <span class="pill pill-info">25 Qs</span>
+          </div>
+          <p class="sidebar-help">
+            Generate 25 fill-in-the-blank questions across general topics (idioms, collocations, phrasal verbs, word formation &amp; advanced grammar) or enter any custom topic.
+          </p>
+          <div id="general-scope-list" class="unit-scope-list">
+            <!-- Populated by app.js -->
+          </div>
+          <form id="custom-topic-form" class="custom-topic-form">
+            <input
+              type="text"
+              id="custom-topic-input"
+              class="custom-topic-input"
+              placeholder="Custom topic (e.g. Travel, AI, Health)..."
+              aria-label="Custom General Topic"
+            />
+            <button type="submit" class="btn btn-secondary btn-sm">
+              Generate 25 Qs
+            </button>
+          </form>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="card-header-row">
+            <h2>Curriculum Units (Level 11)</h2>
+            <span class="pill pill-info">Categorized</span>
+          </div>
+          <p class="sidebar-help">
+            Select a Unit Scope to load or generate 25 daily questions for that unit, or practice the cross-unit Daily Mix.
+          </p>
+          <div id="unit-scope-list" class="unit-scope-list">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Content Area -->
+      <main class="content-area">
+        <!-- Loading Overlay Banner -->
+        <div id="loading-banner" class="loading-banner hidden">
+          <div class="spinner"></div>
+          <div>
+            <strong id="loading-title">Generating 25 Fill-in-the-Blank Questions with LLM...</strong>
+            <p id="loading-subtitle">Creating 5 multi-turn conversations &amp; reading passages categorized by unit.</p>
+          </div>
+        </div>
+
+        <!-- TAB 1: DAILY 25 PRACTICE -->
+        <section id="view-practice" class="tab-view active">
+          <!-- Set Toolbar & Unit Filter Pills -->
+          <div class="practice-toolbar">
+            <div class="toolbar-left">
+              <h2 id="current-set-heading">Daily 25 Questions</h2>
+              <p id="current-set-subheading" class="text-muted">
+                5 Contexts (Multi-turn Conversations &amp; Reading Passages) × 5 Related Fill-in-the-Blank Questions = 25 Questions
+              </p>
+            </div>
+            <div class="toolbar-actions">
+              <button id="btn-grade-all" class="btn btn-accent">
+                🎯 Grade All Answered with LLM (1-100)
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter by Unit / Context quick jump bar -->
+          <div id="context-jump-bar" class="context-jump-bar"></div>
+
+          <!-- Overall LLM Feedback Banner (when graded) -->
+          <div id="overall-feedback-banner" class="overall-feedback-banner hidden"></div>
+
+          <!-- Contexts Container (5 Contexts x 5 Questions = 25 Questions) -->
+          <div id="contexts-container" class="contexts-container"></div>
+        </section>
+
+        <!-- TAB 2: UNIT STUDY GUIDES -->
+        <section id="view-study" class="tab-view hidden">
+          <div class="study-header">
+            <div>
+              <h2>Curriculum Study Guides by Unit</h2>
+              <p class="text-muted">Review Grammar, Vocabulary, Expressions, and Reading notes from the <code>Level/</code> directory.</p>
+            </div>
+            <div id="study-unit-selector" class="study-unit-selector"></div>
+          </div>
+          <div id="study-guide-content" class="study-guide-content"></div>
+        </section>
+
+        <!-- TAB 3: ANALYTICS & HISTORY -->
+        <section id="view-analytics" class="tab-view hidden">
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>Current Set Breakdown by Unit (Scale 1-100)</h3>
+              <div id="analytics-unit-bars" class="analytics-bars"></div>
+            </div>
+            <div class="analytics-card">
+              <h3>Current Set Breakdown by Skill Category</h3>
+              <div id="analytics-category-bars" class="analytics-bars"></div>
+            </div>
+          </div>
+
+          <div class="analytics-card history-card">
+            <div class="card-header-row">
+              <h3>Generated Daily 25-Question Sets History</h3>
+              <button id="btn-refresh-history" class="btn btn-secondary btn-sm">Refresh</button>
+            </div>
+            <div id="history-table-wrapper" class="history-table-wrapper"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
